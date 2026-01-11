@@ -6,3 +6,4 @@ Flask-Login
 Flask-WTF
 email_validator
 Flask-Migrate
+Flask-Mail
