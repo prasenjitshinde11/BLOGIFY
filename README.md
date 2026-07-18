@@ -69,3 +69,6 @@ BLOGIFY/
 ├── requirements.txt     # Python dependencies
 └── README.md            # Project documentation
 ```
+
+
+LIVE DEMO :https://blogify-jitt.onrender.com
