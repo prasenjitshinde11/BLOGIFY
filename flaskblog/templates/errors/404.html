@@ -1,7 +1,12 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="content-section">
-        <h1> Oops... Page Not Found (404)</h1>
-        <p> That page does not exist. Please trya different location</p>
-    </div>
-{% endblock content %}
+<div class="page-full" style="text-align:center;padding:80px 0;">
+  <div style="font-size:80px;margin-bottom:16px;">🔍</div>
+  <h1 style="font-size:48px;font-weight:800;margin:0 0 12px;background:linear-gradient(135deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">404</h1>
+  <h2 style="font-size:22px;font-weight:600;margin:0 0 12px;">Page Not Found</h2>
+  <p style="color:var(--text-secondary);margin:0 0 28px;">The page you're looking for doesn't exist or has been moved.</p>
+  <a href="{{ url_for('main.home') }}" class="btn-submit" style="display:inline-block;text-decoration:none;">
+    <i class="ti ti-home" style="font-size:15px;margin-right:4px;"></i> Back to Home
+  </a>
+</div>
+{% endblock %}

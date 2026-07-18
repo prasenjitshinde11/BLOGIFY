@@ -1,88 +1,116 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container mt-4">
-    <div class="card shadow-sm mb-4">
-       {% if post.image %}
-        <img src="{{ url_for('static', filename='post_images/' + post.image) }}"
-             class="card-img-top"
-             alt="Post Image">
-         {% endif %}
-         <div class="card-body">
-          <h2 class="card-title">{{ post.title }}</h2>
+<div class="page-full">
 
-            <div class="text-muted mb-2 d-flex justify-content-between">
-                <span class ="post-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">
-                     {{ post.author.username }}
-                </span>
-                <span>
-                     {# date hidden #}
-                </span> 
-            </div>
-            <div class="post-card"> 
-            <p class="post-dark">
-                {{ post.content }}
-            </p>
-            </div>
-            <button class="btn btn-outline-danger btn-sm"
-                    id="likeBtn"
-                    onclick="likePost()">
-                ❤️ Like
-            </button>
+  <!-- Post Detail -->
+  <article class="content-section">
+    {% if post.image_file %}
+    <img class="detail-hero"
+         src="{{ url_for('static', filename='post_images/' + post.image_file) }}"
+         alt="{{ post.title }}">
+    {% endif %}
 
-            <span id="like-count" class="ml-2 text-muted">
-                0 likes
-            </span>
+    <h1 class="detail-title">{{ post.title }}</h1>
 
-        </div>
+    <div class="detail-meta">
+      <img class="detail-author-img"
+           src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}"
+           alt="{{ post.author.username }}">
+      <div>
+        <a class="detail-author-name"
+           href="{{ url_for('users.user_posts', username=post.author.username) }}">
+          {{ post.author.username }}
+        </a>
+        <div class="detail-date">{{ post.date_posted.strftime('%B %d, %Y') }}</div>
+      </div>
+      <span class="post-badge" style="margin-left:auto;">
+        <i class="ti ti-clock" style="font-size:13px;"></i>
+        {{ (post.content.split()|length // 200) + 1 }} min read
+      </span>
     </div>
-    <h4 class="mb-3">💬 Comments</h4>
 
-    <form method="POST" class="mb-4">
-        {{ form.hidden_tag() }}
-          <div class="form-group">
-            {{ form.content.label(class="form-control-label") }}
-            {% if form.content.errors %}
-                {{ form.content(class="form-control form-control-lg is-invalid") }}
-                <div class="invalid-feedback">
-                    {% for error in form.content.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% else %}
-                {{ form.content(class="form-control form-control-lg") }}
-            {% endif %}
-            </div>
-         <div class="form-group">
-            {{ form.submit(class="btn btn-outline-info" )}}
-         </div>
-    </form>
-    <ul class="list-group">
-        {% for c in comments %}
-            <li class="list-group-item">
-                <strong> {{ c.author.username }} 
-              </strong>: {{ c.body }}
-            </li>
+    <div class="detail-body">
+      {{ post.content }}
+    </div>
+
+    <div class="interaction-bar">
+      <button class="interact-btn" id="likeBtn" onclick="toggleLike()">
+        <i class="ti ti-heart"></i> <span id="likeText">Like</span>
+      </button>
+      <span class="interact-btn" style="cursor:default;">
+        <i class="ti ti-message-circle"></i> {{ comments|length }} comments
+      </span>
+    </div>
+  </article>
+
+  <!-- Comments Section -->
+  <div style="margin-top:32px;">
+    <h3 class="comments-header">
+      <i class="ti ti-messages"></i> Comments ({{ comments|length }})
+    </h3>
+
+    {% if current_user.is_authenticated %}
+    <form method="POST" class="content-section" style="margin-bottom:24px;">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.content.label(class="form-control-label") }}
+        {% if form.content.errors %}
+          {{ form.content(class="form-control is-invalid", placeholder="Share your thoughts...") }}
+          <div class="invalid-feedback">
+            {% for error in form.content.errors %}
+              <span>{{ error }}</span>
+            {% endfor %}
+          </div>
         {% else %}
-            <li class="list-group-item text-muted">
-                No comments yet.
-            </li>
-        {% endfor %}
-    </ul>
+          {{ form.content(class="form-control", placeholder="Share your thoughts...") }}
+        {% endif %}
+      </div>
+      <button type="submit" class="btn-submit">
+        <i class="ti ti-send" style="font-size:15px;margin-right:4px;"></i> Post Comment
+      </button>
+    </form>
+    {% else %}
+    <div class="content-section" style="text-align:center;margin-bottom:24px;">
+      <p style="color:var(--text-secondary);margin:0;">
+        <a href="{{ url_for('users.login') }}" style="color:var(--cyan);font-weight:600;">Log in</a>
+        to leave a comment.
+      </p>
+    </div>
+    {% endif %}
+
+    {% for c in comments %}
+    <div class="comment-item">
+      <div class="comment-head">
+        <img class="comment-avatar"
+             src="{{ url_for('static', filename='profile_pics/' + c.author.image_file) }}"
+             alt="{{ c.author.username }}">
+        <span class="comment-author">{{ c.author.username }}</span>
+        <span class="comment-time">{{ c.date_posted.strftime('%b %d, %Y') }}</span>
+      </div>
+      <div class="comment-body">{{ c.body }}</div>
+    </div>
+    {% else %}
+    <div class="content-section" style="text-align:center;">
+      <p style="color:var(--text-muted);margin:0;">
+        <i class="ti ti-message-off" style="font-size:20px;display:block;margin-bottom:8px;"></i>
+        No comments yet. Be the first!
+      </p>
+    </div>
+    {% endfor %}
+  </div>
 
 </div>
-<script>
-let likes = 0;
-let liked = false;
+{% endblock %}
 
-function likePost() {
-    if (!liked) {
-        likes++;
-        liked = true;
-        document.getElementById("like-count").innerText = likes + " likes";
-        document.getElementById("likeBtn").innerText = "❤️ Liked";
-        document.getElementById("likeBtn").disabled = true;
-    }
+{% block scripts %}
+<script>
+let liked = false;
+function toggleLike(){
+  const btn = document.getElementById('likeBtn');
+  const txt = document.getElementById('likeText');
+  liked = !liked;
+  if(liked){btn.classList.add('liked');txt.textContent='Liked';}
+  else{btn.classList.remove('liked');txt.textContent='Like';}
 }
 </script>
-
 {% endblock %}

@@ -1,73 +1,88 @@
+{% extends "auth_base.html" %}
+{% block page_title %}Sign up{% endblock %}
 
-{% extends "layout.html" %}
-{% block content %}
-    <div class="content-section">
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Join Today</legend>
-                <div class="form-group">
-                    {{ form.username.label(class="form-control-label") }}
+{% block form_content %}
+<div class="tabs">
+  <a class="tab" href="{{ url_for('users.login') }}">Log in</a>
+  <a class="tab active" href="{{ url_for('users.register') }}">Sign up</a>
+</div>
 
-                    {% if form.username.errors %}
-                        {{ form.username(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.username.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.username(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    {{ form.email.label(class="form-control-label") }}
-                    {% if form.email.errors %}
-                        {{ form.email(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.email.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.email(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    {{ form.password.label(class="form-control-label") }}
-                    {% if form.password.errors %}
-                        {{ form.password(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.password(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    {{ form.confirm_password.label(class="form-control-label") }}
-                    {% if form.confirm_password.errors %}
-                        {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.confirm_password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.confirm_password(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-            </fieldset>
-            <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
-            </div>
-        </form>
+<h2 class="form-title">Create your account</h2>
+<p class="form-sub">Join the Blogify community and start writing today.</p>
+
+<form method="POST" action="">
+  {{ form.hidden_tag() }}
+
+  <div class="field">
+    <label for="username">Username</label>
+    <div class="input-wrap">
+      <i class="ti ti-user"></i>
+      {% if form.username.errors %}
+        {{ form.username(class="is-invalid", placeholder="Choose a username", id="username") }}
+        {% for error in form.username.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.username(placeholder="Choose a username", id="username") }}
+      {% endif %}
     </div>
-    <div class="border-top pt-3">
-        <small class="text-muted">
-            Already Have An Account? <a class="ml-2" href="{{ url_for('users.login') }}">Sign In</a>
-        </small>
+  </div>
+
+  <div class="field">
+    <label for="email">Email address</label>
+    <div class="input-wrap">
+      <i class="ti ti-mail"></i>
+      {% if form.email.errors %}
+        {{ form.email(class="is-invalid", placeholder="name@company.com", id="email") }}
+        {% for error in form.email.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.email(placeholder="name@company.com", id="email") }}
+      {% endif %}
     </div>
-{% endblock content %}
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="input-wrap">
+      <i class="ti ti-lock"></i>
+      {% if form.password.errors %}
+        {{ form.password(class="is-invalid", placeholder="Create a password", id="password") }}
+        {% for error in form.password.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.password(placeholder="Create a password", id="password") }}
+      {% endif %}
+      <i class="ti ti-eye toggle-eye"></i>
+    </div>
+  </div>
+
+  <div class="field" style="margin-bottom:28px;">
+    <label for="confirm_password">Confirm password</label>
+    <div class="input-wrap">
+      <i class="ti ti-lock-check"></i>
+      {% if form.confirm_password.errors %}
+        {{ form.confirm_password(class="is-invalid", placeholder="Confirm your password", id="confirm_password") }}
+        {% for error in form.confirm_password.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.confirm_password(placeholder="Confirm your password", id="confirm_password") }}
+      {% endif %}
+    </div>
+  </div>
+
+  <button type="submit" class="submit-btn">Create account</button>
+</form>
+
+<div class="divider">or sign up with</div>
+
+<div class="social-row">
+  <button type="button" class="social-btn"><i class="ti ti-brand-google"></i> Google</button>
+  <button type="button" class="social-btn"><i class="ti ti-brand-github"></i> GitHub</button>
+</div>
+
+<div class="switch-line">Already have an account? <a href="{{ url_for('users.login') }}">Log in</a></div>
+{% endblock %}

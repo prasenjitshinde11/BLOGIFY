@@ -1,40 +1,54 @@
-{% extends "layout.html" %}
-{% block content %}
-    <div class="content-section">
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Reset Password</legend>
-                <div class="form-group">
-                    {{ form.password.label(class="form-control-label") }}
-                    {% if form.password.errors %}
-                        {{ form.password(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.password(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-                 <div class="form-group">
-                    {{ form.confirm_password.label(class="form-control-label") }}
-                    {% if form.confirm_password.errors %}
-                        {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.confirm_password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.confirm_password(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-            </fieldset>
-            <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
-            </div>
-        </form>
+{% extends "auth_base.html" %}
+{% block page_title %}Set new password{% endblock %}
+
+{% block form_content %}
+<div style="text-align:center;margin-bottom:32px;">
+  <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--cyan),var(--violet));display:inline-flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 0 30px rgba(0,229,255,0.3);margin-bottom:20px;">
+    <i class="ti ti-lock-open"></i>
+  </div>
+</div>
+
+<h2 class="form-title" style="text-align:center;">Set new password</h2>
+<p class="form-sub" style="text-align:center;">Your new password must be different from previously used passwords.</p>
+
+<form method="POST" action="">
+  {{ form.hidden_tag() }}
+
+  <div class="field">
+    <label for="password">New password</label>
+    <div class="input-wrap">
+      <i class="ti ti-lock"></i>
+      {% if form.password.errors %}
+        {{ form.password(class="is-invalid", placeholder="Create a new password", id="password") }}
+        {% for error in form.password.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.password(placeholder="Create a new password", id="password") }}
+      {% endif %}
+      <i class="ti ti-eye toggle-eye"></i>
     </div>
-{% endblock content %}
+  </div>
+
+  <div class="field" style="margin-bottom:28px;">
+    <label for="confirm_password">Confirm new password</label>
+    <div class="input-wrap">
+      <i class="ti ti-lock-check"></i>
+      {% if form.confirm_password.errors %}
+        {{ form.confirm_password(class="is-invalid", placeholder="Confirm your new password", id="confirm_password") }}
+        {% for error in form.confirm_password.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.confirm_password(placeholder="Confirm your new password", id="confirm_password") }}
+      {% endif %}
+    </div>
+  </div>
+
+  <button type="submit" class="submit-btn">Reset password</button>
+</form>
+
+<div class="switch-line">
+  <a href="{{ url_for('users.login') }}"><i class="ti ti-arrow-left" style="font-size:14px;"></i> Back to login</a>
+</div>
+{% endblock %}

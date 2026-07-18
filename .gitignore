@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 instance/
 .env
+
+# Ignore user uploads but keep the default profile picture
+flaskblog/static/profile_pics/*
+!flaskblog/static/profile_pics/default.jpg

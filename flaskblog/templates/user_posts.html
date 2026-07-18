@@ -1,84 +1,110 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1 class="mb-3"> Posts by {{ user.username }} ({{ posts.total }})</h1>
-{% for post in posts.items %}
-<div class="post-card">
-    <div class="d-flex align-items-center mb-2">
-        <img class="article-img"
-             src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}"
-             alt="profile">
+<div class="page-full">
 
-        <div>
-            <span class="post-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</span><br>
-            <small class="text-muted">
-                {{ post.date_posted.strftime('%b %d, %Y') }}
-
-                {% if post.author == current_user %}
-                    <a class="btn btn-secondary btn-sm mt-1 mb-1"
-                       href="{{ url_for('update_post', post_id=post.id) }}">
-                        Update
-                    </a>
-
-                    <button type="button"
-                            class="btn btn-danger btn-sm m-1"
-                            data-toggle="modal"
-                            data-target="#deleteModal-{{ post.id }}">
-                        Delete
-                    </button>
-                {% endif %}
-            </small>
-        </div>
+  <!-- User Header -->
+  <div class="user-header">
+    <img class="user-header-img"
+         src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}"
+         alt="{{ user.username }}">
+    <div class="user-header-info">
+      <h2>{{ user.username }}</h2>
+      <span class="post-count">{{ posts.total }} post{{ 's' if posts.total != 1 }}</span>
     </div>
-    {% if post.image_file %}
-        <img class="post-image"
-             src="{{ url_for('static', filename='post_images/' + post.image_file) }}"
-             alt="post-image">
-    {% endif %}
+  </div>
 
-    <h3 class="post-title">{{ post.title }}</h3>
-    <p class="post-content">
-        {{ post.content[:100] }}...
-    </p>
-    <a href="{{ url_for('post', post_id=post.id) }}" class="read-more">
-        Read More →
-    </a>
-
-</div>
-<div class="modal fade" id="deleteModal-{{ post.id }}" tabindex="-1"
-     role="dialog" aria-labelledby="deleteModalLabel-{{ post.id }}" aria-hidden="true">
-
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel {{ post.id }}">Delete Post? </h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+  <!-- Posts Feed -->
+  {% for post in posts.items %}
+  <article class="post-card" id="post-{{ post.id }}">
+    <div class="post-header">
+      <img class="post-avatar"
+           src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}"
+           alt="{{ post.author.username }}">
+      <div class="post-meta">
+        <a class="post-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">
+          {{ post.author.username }}
+        </a>
+        <div class="post-date">{{ post.date_posted.strftime('%b %d, %Y') }}</div>
+      </div>
+      {% if post.author == current_user %}
+      <div class="post-actions">
+        <a class="btn-sm btn-edit" href="{{ url_for('posts.update_post', post_id=post.id) }}">
+          <i class="ti ti-pencil"></i> Edit
+        </a>
+        <button class="btn-sm btn-delete" onclick="openDeleteModal({{ post.id }})">
+          <i class="ti ti-trash"></i> Delete
         </button>
       </div>
+      {% endif %}
+    </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    {% if post.image_file %}
+    <img class="post-image"
+         src="{{ url_for('static', filename='post_images/' + post.image_file) }}"
+         alt="{{ post.title }}">
+    {% endif %}
 
-        <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" style="display:inline;">
-           {{ form.hidden_tag() }}
-        <button type="submit" class="btn btn-danger">Danger
-        </button>
+    <h2 class="post-title">
+      <a href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a>
+    </h2>
+    <p class="post-content">{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}</p>
+
+    <div class="post-footer">
+      <div class="post-stats">
+        <span class="post-stat"><i class="ti ti-heart"></i> 0</span>
+        <span class="post-stat"><i class="ti ti-message-circle"></i> {{ post.comments|length }}</span>
+      </div>
+      <a class="read-more" href="{{ url_for('posts.post', post_id=post.id) }}">
+        Read More <i class="ti ti-arrow-right"></i>
+      </a>
+    </div>
+  </article>
+
+  <!-- Delete Modal -->
+  <div class="modal-overlay" id="deleteModal-{{ post.id }}">
+    <div class="modal-box">
+      <h3>Delete this post?</h3>
+      <p>This action cannot be undone.</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeDeleteModal({{ post.id }})">Cancel</button>
+        <form action="{{ url_for('posts.delete_post', post_id=post.id) }}" method="POST" style="display:inline;">
+          {{ form.hidden_tag() }}
+          <button type="submit" class="btn-danger">Delete</button>
         </form>
       </div>
     </div>
   </div>
-</div>
-{% endfor %}
-{% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=1) %}
-{% if page_num %}
-{% if posts.page == page_num %}
-<a class="btn btn-info" href="{{ url_for('users.user_posts', username=user.username, page=page_num) }}"> {{ page_num }}</a>
-{% else %}
-<a class="btn btn-outline-info" href="{{ url_for('users.user_posts', username=user.username, page=page_num) }}"> {{ page_num }}</a>
-{% endif %}
-{% else %}
-  ... 
+  {% endfor %}
+
+  {% if posts.items|length == 0 %}
+  <div class="content-section" style="text-align:center;padding:60px 32px;">
+    <i class="ti ti-notebook" style="font-size:48px;color:var(--text-muted);margin-bottom:16px;display:block;"></i>
+    <h3 style="margin:0 0 8px;">No posts yet</h3>
+    <p style="color:var(--text-secondary);margin:0;">This user hasn't published any posts.</p>
+  </div>
   {% endif %}
-{% endfor %}
-{% endblock content %}
+
+  <!-- Pagination -->
+  <div class="pagination">
+    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if page_num %}
+        <a class="page-btn {% if posts.page == page_num %}active{% endif %}"
+           href="{{ url_for('users.user_posts', username=user.username, page=page_num) }}">{{ page_num }}</a>
+      {% else %}
+        <span class="page-ellipsis">…</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openDeleteModal(id){document.getElementById('deleteModal-'+id).classList.add('show');}
+function closeDeleteModal(id){document.getElementById('deleteModal-'+id).classList.remove('show');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');});
+});
+</script>
+{% endblock %}

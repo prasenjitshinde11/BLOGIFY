@@ -1,4 +1,4 @@
-from datetime import datetime  
+from datetime import datetime, timezone
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from flaskblog import db, login_manager 
@@ -6,7 +6,7 @@ from flask_login import UserMixin
 
 
 @login_manager.user_loader
-def User(user_id):
+def load_user(user_id):
     return User.query.get(int(user_id))
 
 class User(db.Model, UserMixin): 
@@ -28,7 +28,7 @@ class User(db.Model, UserMixin):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token, max_age=1800)['user_id']
-        except:
+        except Exception:
             return None
         return User.query.get(user_id)
 
@@ -39,7 +39,7 @@ class User(db.Model, UserMixin):
 class Post(db.Model):
     id= db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100) , nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False , default=datetime.utcnow)
+    date_posted = db.Column(db.DateTime, nullable=False , default=lambda: datetime.now(timezone.utc))
     content = db.Column(db.Text, nullable=False)
     image_file = db.Column(db.String(20), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -50,9 +50,10 @@ class Post(db.Model):
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_posted = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    author = db.relationship('User', backref='comments', lazy=True)
 
     def __repr__(self):
       return f"Comment('{self.body}, {self.date_posted})"

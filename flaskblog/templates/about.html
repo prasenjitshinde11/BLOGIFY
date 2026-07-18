@@ -1,4 +1,59 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1> About page</h1>
-{% endblock content %}
+<div class="page-full">
+
+  <!-- Hero -->
+  <div class="about-hero">
+    <h1>About Blogify</h1>
+    <p>A modern blogging platform built with passion — where good writing finds its readers.</p>
+  </div>
+
+  <!-- Features -->
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">✍️</span>
+      <h3 class="feature-title">Write & Share</h3>
+      <p class="feature-desc">Create beautiful blog posts and share your thoughts with a community that values thoughtful writing.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">❤️</span>
+      <h3 class="feature-title">Like & Engage</h3>
+      <p class="feature-desc">Like posts, leave comments, and connect with other writers in a distraction-free environment.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔍</span>
+      <h3 class="feature-title">Search & Discover</h3>
+      <p class="feature-desc">Find content that matters with powerful search and discover trending topics across the platform.</p>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div style="text-align:center;margin-bottom:48px;">
+    <h3 class="section-title" style="text-align:center;margin-bottom:20px;">Built With</h3>
+    <div class="tech-row">
+      <span class="tech-badge">🐍 Python</span>
+      <span class="tech-badge">🌶️ Flask</span>
+      <span class="tech-badge">🗄️ SQLAlchemy</span>
+      <span class="tech-badge">🔐 Flask-Login</span>
+      <span class="tech-badge">📧 Flask-Mail</span>
+      <span class="tech-badge">🗃️ SQLite</span>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="content-section" style="text-align:center;padding:40px;">
+    <h3 style="font-size:22px;font-weight:700;margin:0 0 10px;">Ready to start writing?</h3>
+    <p style="color:var(--text-secondary);margin:0 0 24px;">Join the community and share your first story today.</p>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('posts.new_post') }}" class="btn-submit" style="display:inline-block;text-decoration:none;">
+        <i class="ti ti-plus" style="font-size:15px;margin-right:4px;"></i> Create Your First Post
+      </a>
+    {% else %}
+      <a href="{{ url_for('users.register') }}" class="btn-submit" style="display:inline-block;text-decoration:none;">
+        <i class="ti ti-user-plus" style="font-size:15px;margin-right:4px;"></i> Sign Up Free
+      </a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

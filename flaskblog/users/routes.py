@@ -6,6 +6,7 @@ from flaskblog.users.forms import (RegistrationForm, LoginForm ,UpdateAccountFor
 from flaskblog.models import User, Post
 from flask_login import login_user ,current_user, logout_user, login_required
 from flaskblog.users.utils import save_picture, send_reset_email
+from urllib.parse import urlparse
 
 users = Blueprint('users', __name__)
 
@@ -34,7 +35,10 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return  redirect( next_page) if next_page else redirect(url_for('main.home'))
+            # Fix #16: Validate next_page to prevent open redirect
+            if next_page and urlparse(next_page).netloc == '':
+                return redirect(next_page)
+            return redirect(url_for('main.home'))
         else:
             flash('Login unsuccessful. Please check email and password', 'danger')
 
@@ -54,9 +58,10 @@ def account():
 
     if form.validate_on_submit():
         if form.picture.data:
-         picture_file =  save_picture(form.picture.data)
-         current_user.image_file = picture_file
-         current_user.username = form.username.data
+            picture_file =  save_picture(form.picture.data)
+            current_user.image_file = picture_file
+        # Fix #11: username update was inside the if block, now outside
+        current_user.username = form.username.data
         current_user.email = form.email.data
         db.session.commit()
         flash('Your account has been updated!','success')
@@ -103,13 +108,15 @@ def reset_token(token):
     user = User.verify_reset_token(token)
     if user is None:
         flash('That is an invalid or expired token', 'warning')
-        return redirect(url_for('users.reset_password'))
+        # Fix #7: Correct endpoint name
+        return redirect(url_for('users.reset_request'))
     form  = ResetPasswordForm()
     if form.validate_on_submit():
+        # Fix #5: Update existing user password instead of creating new user
         hashed_password =  bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.password = hashed_password
         db.session.commit()
-        flash("Your password has been update! You are now  able to log in " , 'success')
+        flash("Your password has been updated! You are now able to log in" , 'success')
         return redirect(url_for('users.login'))
-    return render_template('reset_request.html', title='Reset Password',  form=form)
+    # Fix #6: Render the correct template
+    return render_template('reset_token.html', title='Reset Password',  form=form)

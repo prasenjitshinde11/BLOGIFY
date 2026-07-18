@@ -32,20 +32,27 @@ def post(post_id):
         db.session.commit()
         flash('Your comment has been added!', 'success')
         return redirect(url_for('posts.post', post_id=post.id))
-    return render_template('post.html', title='New POst', post=post, form=form)
+    
+    # Fix #9: Query comments from DB and pass to template
+    comments = Comment.query.filter_by(post_id=post.id).order_by(Comment.date_posted.desc()).all()
+    return render_template('post.html', title=post.title, post=post, form=form, comments=comments)
 
 
 @posts.route("/post/<int:post_id>/update",methods=['GET','POST'])
 @login_required
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
+    # Added authorization check — only the author can update
+    if post.author != current_user:
+        abort(403)
     form = PostForm()
         
     if form.validate_on_submit():
         post.title =  form.title.data
         post.content =  form.content.data
         db.session.commit()
-        flash('Your post has been updated','succces')
+        # Fix #22: Fixed flash category typo 'succces' → 'success'
+        flash('Your post has been updated','success')
         return redirect(url_for('posts.post', post_id=post.id))
     
     elif request.method == 'GET':
@@ -55,25 +62,9 @@ def update_post(post_id):
     return render_template('create_post.html', title='update Post', form=form, legend='Update Post')
 
 
-comments = {}
-
-@posts.route("/post/<string:title>", methods=["GET", "POST"])
-def post_detail(title):
-    post = next((p for p in post if p['title'] == title), None)
-
-    if title not in comments:
-        comments[title] = []
-
-    if request.method == "POST":
-        comment = request.form.get("comment")
-        if comment:
-            comments[title].append(comment)
-
-    return render_template(
-        "post.html",
-        post=post,
-        comments=comments[title]
-    )
+# Fix #2/#3: Removed broken post_detail route entirely
+# It had conflicting URL pattern, variable name collision, and used
+# an in-memory dict instead of the database
 
 
 @posts.route("/post/<int:post_id>/delete",methods=['POST'])

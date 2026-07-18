@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    SECRET_KEY = 'your-secret-key-goes-here'
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-fallback-change-in-production')
     SQLALCHEMY_DATABASE_URI = 'sqlite:///site.db'
     MAIL_SERVER = 'smtp.googlemail.com' 
     MAIL_PORT = 587
