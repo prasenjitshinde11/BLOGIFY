@@ -3,7 +3,7 @@ from flask import (render_template, url_for, flash,
 from flask_login import current_user, login_required
 from flaskblog import db
 from flaskblog.models import Post , Comment
-from flaskblog.posts.forms import PostForm, commentForm
+from flaskblog.posts.forms import PostForm, CommentForm
 
 posts = Blueprint('posts', __name__)
 
@@ -24,7 +24,7 @@ def new_post():
 @login_required
 def post(post_id):
     post = Post.query.get_or_404(post_id)
-    form = commentForm()
+    form = CommentForm()
     
     if form.validate_on_submit():
         comment = Comment(body=form.content.data, user_id=current_user.id, post_id=post.id)

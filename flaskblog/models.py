@@ -43,6 +43,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     image_file = db.Column(db.String(20), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"Post('{self.title}' , '{self.date_posted}')" 

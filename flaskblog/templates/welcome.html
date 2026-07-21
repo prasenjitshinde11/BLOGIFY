@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Blogify — A calmer place to write and read. Join a community that values thoughtful writing.">
+<title>Blogify — Welcome</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e1a;
+    --bg-soft: rgba(255,255,255,0.045);
+    --border: rgba(255,255,255,0.09);
+    --text:#f2f4f8;
+    --text-soft:#9aa3b5;
+    --text-mute:#5f6779;
+    --cyan:#00e5ff;
+    --violet:#7c4dff;
+    --glow-a: rgba(124,77,255,0.22);
+    --glow-b: rgba(0,229,255,0.14);
+  }
+  [data-theme="light"]{
+    --bg:#f4f6fb;
+    --bg-soft: rgba(10,14,26,0.035);
+    --border: rgba(10,14,26,0.09);
+    --text:#12141c;
+    --text-soft:#4d5468;
+    --text-mute:#8a90a3;
+    --glow-a: rgba(124,77,255,0.14);
+    --glow-b: rgba(0,190,220,0.12);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;width:100%;height:100%;}
+  body{
+    min-height:100vh; overflow-x:hidden;
+    background:
+      radial-gradient(1100px 560px at 18% 8%, var(--glow-a), transparent 60%),
+      radial-gradient(950px 520px at 84% 92%, var(--glow-b), transparent 55%),
+      var(--bg);
+    font-family:'Inter', sans-serif;
+    color:var(--text);
+    position:relative;
+    transition: background 0.5s ease, color 0.4s ease;
+  }
+
+  /* floating orbs */
+  .orb{ position:absolute; border-radius:50%; filter:blur(2px); opacity:0.55; animation: float 9s ease-in-out infinite; }
+  .orb1{ width:10px;height:10px; background:var(--cyan); top:18%; left:22%; animation-delay:0s; }
+  .orb2{ width:6px;height:6px; background:var(--violet); top:70%; left:78%; animation-delay:2s; }
+  .orb3{ width:8px;height:8px; background:var(--cyan); top:75%; left:15%; animation-delay:4s; }
+  .orb4{ width:5px;height:5px; background:var(--violet); top:15%; left:80%; animation-delay:1s; }
+  .orb5{ width:7px;height:7px; background:var(--cyan); top:45%; left:6%; animation-delay:3s; }
+  @keyframes float{
+    0%,100%{ transform:translateY(0) translateX(0); opacity:0.45; }
+    50%{ transform:translateY(-26px) translateX(10px); opacity:0.9; }
+  }
+
+  /* theme toggle */
+  .theme-toggle{
+    position:absolute; top:36px; right:48px;
+    display:flex; align-items:center; gap:10px;
+    padding:8px; border-radius:999px;
+    background:var(--bg-soft); border:1px solid var(--border);
+    backdrop-filter: blur(14px); cursor:pointer;
+    z-index:10;
+  }
+  .theme-toggle .track{
+    width:52px; height:28px; border-radius:999px; position:relative;
+    background:linear-gradient(135deg, var(--cyan), var(--violet));
+  }
+  .theme-toggle .knob{
+    position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%;
+    background:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:#7c4dff; transition: left 0.3s ease;
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  }
+  [data-theme="light"] .theme-toggle .knob{ left:27px; }
+
+  /* nav / logo */
+  .logo{
+    position:absolute; top:40px; left:56px;
+    display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px;
+    z-index:10;
+  }
+  .logo-mark{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg, var(--cyan), var(--violet));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 22px rgba(0,229,255,0.35); font-size:17px; color:#04121a;
+  }
+
+  /* center content */
+  .center{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:28px; text-align:center; position:relative; z-index:2;
+    padding:100px 24px 120px;
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:8px;
+    font-size:12.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--cyan); padding:7px 16px; border-radius:999px;
+    background:var(--bg-soft); border:1px solid var(--border);
+  }
+  .eyebrow i{ font-size:14px; }
+
+  h1{
+    font-size:clamp(32px, 5vw, 56px); font-weight:900; letter-spacing:-0.03em; line-height:1.08;
+    margin:0; max-width:820px;
+    background:linear-gradient(120deg, var(--text) 40%, var(--cyan) 70%, var(--violet) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .sub{
+    font-size:17px; color:var(--text-soft); max-width:520px; line-height:1.7; margin:0;
+  }
+
+  /* quote carousel */
+  .quote-box{
+    margin-top:6px; min-height:70px; max-width:560px;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .quote-text{
+    font-family:'Source Serif 4', serif; font-style:italic; font-size:16.5px;
+    color:var(--text-soft); line-height:1.6; opacity:0; transform:translateY(6px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .quote-text.show{ opacity:1; transform:translateY(0); }
+  .quote-author{ font-size:12.5px; font-weight:700; color:var(--text-mute); letter-spacing:0.02em; }
+
+  /* CTA buttons */
+  .cta-wrap{ perspective:600px; margin-top:10px; }
+  .signup-btn{
+    position:relative; padding:17px 44px; border:none; border-radius:16px; cursor:pointer;
+    font-size:16px; font-weight:700; color:#04121a; font-family:inherit;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.4) inset,
+      0 10px 0 0 #0090a8,
+      0 18px 30px rgba(0,229,255,0.30);
+    transform: translateY(0) rotateX(0deg);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display:flex; align-items:center; gap:10px;
+    text-decoration:none;
+  }
+  .signup-btn i{ font-size:18px; transition: transform 0.25s ease; }
+  .signup-btn:hover{
+    transform: translateY(-3px) rotateX(4deg);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.4) inset,
+      0 13px 0 0 #0090a8,
+      0 24px 38px rgba(0,229,255,0.38);
+  }
+  .signup-btn:hover i{ transform: translateX(4px); }
+  .signup-btn:active{
+    transform: translateY(6px) rotateX(0deg);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.4) inset,
+      0 2px 0 0 #0090a8,
+      0 6px 14px rgba(0,229,255,0.25);
+  }
+
+  .login-line{ font-size:13.5px; color:var(--text-soft); margin-top:2px; }
+  .login-line a{ color:var(--cyan); font-weight:700; text-decoration:none; }
+  .login-line a:hover{ text-decoration:underline; }
+
+  /* stats footer */
+  .stats-row{
+    position:fixed; bottom:44px; left:0; right:0;
+    display:flex; justify-content:center; gap:64px;
+    z-index:2;
+  }
+  .stat{ text-align:center; }
+  .stat-num{ font-size:20px; font-weight:800; }
+  .stat-label{ font-size:12px; color:var(--text-mute); margin-top:3px; }
+
+  /* ---- flash messages ---- */
+  .flash-container{
+    position:fixed; top:20px; left:50%; transform:translateX(-50%);
+    z-index:200; display:flex; flex-direction:column; gap:10px; width:90%; max-width:500px;
+  }
+  .flash-msg{
+    padding:14px 20px; border-radius:12px; font-size:14px; font-weight:600;
+    background:var(--bg-soft); border:1px solid var(--border);
+    backdrop-filter:blur(14px); color:var(--text);
+    animation: flash-in 0.4s ease;
+  }
+  .flash-msg.success{ border-color:rgba(0,229,255,0.4); }
+  .flash-msg.danger{ border-color:rgba(255,82,82,0.4); }
+  .flash-msg.info{ border-color:rgba(124,77,255,0.4); }
+  @keyframes flash-in{
+    from{ opacity:0; transform:translateY(-10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---- responsive ---- */
+  @media (max-width:768px){
+    .logo{ top:20px; left:24px; font-size:16px; }
+    .logo-mark{ width:28px; height:28px; font-size:14px; }
+    .theme-toggle{ top:20px; right:20px; }
+    .theme-toggle .track{ width:44px; height:24px; }
+    .theme-toggle .knob{ width:18px; height:18px; }
+    [data-theme="light"] .theme-toggle .knob{ left:23px; }
+    .center{ padding:80px 20px 140px; gap:20px; }
+    .sub{ font-size:15px; }
+    .quote-text{ font-size:14.5px; }
+    .signup-btn{ padding:14px 32px; font-size:14px; }
+    .stats-row{ gap:32px; bottom:28px; }
+    .stat-num{ font-size:17px; }
+    .stat-label{ font-size:11px; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash-msg {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+  <div class="orb orb5"></div>
+
+  <div class="logo">
+    <div class="logo-mark"><i class="ti ti-feather"></i></div>
+    Blogify
+  </div>
+
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <div class="track">
+      <div class="knob" id="themeKnob"><i class="ti ti-sun" id="themeIcon"></i></div>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="eyebrow"><i class="ti ti-sparkles"></i> Now in public beta</div>
+
+    <h1>Welcome to Blogify</h1>
+    <p class="sub">A calmer place to write and read — clean typography, thoughtful design, and a community that actually reads to the end.</p>
+
+    <div class="quote-box">
+      <div class="quote-text" id="quoteText"></div>
+      <div class="quote-author" id="quoteAuthor"></div>
+    </div>
+
+    <div class="cta-wrap">
+      <a class="signup-btn" href="{{ url_for('users.register') }}" id="signupBtn">
+        <span>Sign Up Free</span> <i class="ti ti-arrow-right"></i>
+      </a>
+    </div>
+    <div class="login-line">Already have an account? <a href="{{ url_for('users.login') }}">Log in</a></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num">{{ total_users }}+</div>
+      <div class="stat-label">Writers</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">{{ total_posts }}</div>
+      <div class="stat-label">Stories published</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">{{ total_comments }}</div>
+      <div class="stat-label">Conversations</div>
+    </div>
+  </div>
+
+  <script>
+    /* Theme toggle */
+    function toggleTheme(){
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      const isLight = body.getAttribute('data-theme') === 'light';
+      body.setAttribute('data-theme', isLight ? 'dark' : 'light');
+      icon.className = isLight ? 'ti ti-sun' : 'ti ti-moon';
+      localStorage.setItem('blogify-theme', isLight ? 'dark' : 'light');
+    }
+    /* Restore saved theme */
+    (function(){
+      const saved = localStorage.getItem('blogify-theme');
+      if(saved === 'light'){
+        document.body.setAttribute('data-theme', 'light');
+        document.getElementById('themeIcon').className = 'ti ti-moon';
+      }
+    })();
+
+    /* Quote carousel */
+    const quotes = [
+      { text: "Writing is thinking. Thinking well is a gift you give your reader.", author: "— Zinsser, on craft" },
+      { text: "A good story doesn't need decoration, it needs honesty.", author: "— Amara Reyes, Senior Editor" },
+      { text: "The blank page is not empty. It's full of everything you haven't said yet.", author: "— Tomas Kern, Writer" },
+      { text: "Read like a writer, write like a reader.", author: "— Blogify Community" }
+    ];
+    let qi = 0;
+    const qText = document.getElementById('quoteText');
+    const qAuthor = document.getElementById('quoteAuthor');
+
+    function showQuote(i){
+      qText.classList.remove('show');
+      qAuthor.style.opacity = 0;
+      setTimeout(() => {
+        qText.textContent = quotes[i].text;
+        qAuthor.textContent = quotes[i].author;
+        qText.classList.add('show');
+        qAuthor.style.transition = 'opacity 0.6s ease';
+        qAuthor.style.opacity = 1;
+      }, 300);
+    }
+    showQuote(qi);
+    setInterval(() => {
+      qi = (qi + 1) % quotes.length;
+      showQuote(qi);
+    }, 4500);
+
+    /* Auto-dismiss flash messages */
+    setTimeout(() => {
+      document.querySelectorAll('.flash-msg').forEach(el => {
+        el.style.transition = 'opacity 0.4s ease';
+        el.style.opacity = 0;
+        setTimeout(() => el.remove(), 400);
+      });
+    }, 4000);
+  </script>
+
+</body>
+</html>

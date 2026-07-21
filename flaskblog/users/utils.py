@@ -12,6 +12,13 @@ def save_picture(form_picture):
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
 
+    # Delete old profile picture if it's not the default
+    from flask_login import current_user
+    if current_user.image_file != 'default.jpg':
+        old_picture_path = os.path.join(current_app.root_path, 'static/profile_pics', current_user.image_file)
+        if os.path.exists(old_picture_path):
+            os.remove(old_picture_path)
+
     output_size = (125, 125)
     i =Image.open(form_picture)
     i.thumbnail(output_size)

@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask import  render_template, url_for, flash, redirect , request 
 from flaskblog import  db , bcrypt 
 from flaskblog.users.forms import (RegistrationForm, LoginForm ,UpdateAccountForm, 
-                             DeleteForm, RequestResetForm, ResetPasswordForm, CommentForm)
+                             DeleteForm, RequestResetForm, ResetPasswordForm)
 from flaskblog.models import User, Post
 from flask_login import login_user ,current_user, logout_user, login_required
 from flaskblog.users.utils import save_picture, send_reset_email
@@ -27,6 +27,8 @@ def register():
 
 @users.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
     form = LoginForm()
 
     if form.validate_on_submit():
