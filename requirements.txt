@@ -9,3 +9,5 @@ Flask-Migrate==4.0.5
 Flask-Mail==0.9.1
 Pillow
 python-dotenv
+itsdangerous
+psycopg2-binary
