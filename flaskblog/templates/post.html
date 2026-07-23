@@ -34,9 +34,21 @@
     </div>
 
     <div class="interaction-bar">
-      <button class="interact-btn" id="likeBtn" onclick="toggleLike()">
-        <i class="ti ti-heart"></i> <span id="likeText">Like</span>
+      {% if current_user.is_authenticated %}
+      <button class="interact-btn {% if post.is_liked_by(current_user) %}liked{% endif %}"
+              id="likeBtn"
+              data-post-id="{{ post.id }}"
+              onclick="toggleLike(this)">
+        <i class="ti ti-heart"></i>
+        <span id="likeCount">{{ post.like_count }}</span>
+        <span id="likeText">{% if post.is_liked_by(current_user) %}Liked{% else %}Like{% endif %}</span>
       </button>
+      {% else %}
+      <a href="{{ url_for('users.login') }}" class="interact-btn">
+        <i class="ti ti-heart"></i>
+        <span>{{ post.like_count }}</span> Like
+      </a>
+      {% endif %}
       <span class="interact-btn" style="cursor:default;">
         <i class="ti ti-message-circle"></i> {{ comments|length }} comments
       </span>
@@ -104,13 +116,19 @@
 
 {% block scripts %}
 <script>
-let liked = false;
-function toggleLike(){
-  const btn = document.getElementById('likeBtn');
-  const txt = document.getElementById('likeText');
-  liked = !liked;
-  if(liked){btn.classList.add('liked');txt.textContent='Liked';}
-  else{btn.classList.remove('liked');txt.textContent='Like';}
+function toggleLike(btn) {
+  const postId = btn.dataset.postId;
+  fetch(`/post/${postId}/like`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.classList.toggle('liked', data.liked);
+    document.getElementById('likeText').textContent  = data.liked ? 'Liked' : 'Like';
+    document.getElementById('likeCount').textContent = data.count;
+  })
+  .catch(() => { window.location.href = "{{ url_for('users.login') }}"; });
 }
 </script>
 {% endblock %}
