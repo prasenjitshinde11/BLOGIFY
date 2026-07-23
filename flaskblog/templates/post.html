@@ -120,7 +120,7 @@ function toggleLike(btn) {
   const postId = btn.dataset.postId;
   fetch(`/post/${postId}/like`, {
     method: 'POST',
-    headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' }
   })
   .then(r => r.json())
   .then(data => {
