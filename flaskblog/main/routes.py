@@ -1,8 +1,8 @@
-from flask import Blueprint
-from flask import render_template, request, Blueprint
+from flask import Blueprint, render_template
 from flask_login import current_user
 from flaskblog.models import Post, User, Comment
 from flaskblog.users.forms import DeleteForm
+from flaskblog.utils import get_page
 
 main = Blueprint('main', __name__)
 
@@ -21,7 +21,7 @@ def home():
                                total_comments=total_comments)
 
     # Logged-in users see the regular post feed
-    page = request.args.get('page', 1, type=int)
+    page = get_page()
     post = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
     form = DeleteForm()
     return render_template('home.html', posts=post, form=form)
