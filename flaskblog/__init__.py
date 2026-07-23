@@ -1,10 +1,14 @@
+import logging
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flaskblog.config import Config
+
+logger = logging.getLogger(__name__)
 
 
 db = SQLAlchemy()
@@ -37,5 +41,15 @@ def create_app():
     app.register_blueprint(posts)
     app.register_blueprint(main)
     app.register_blueprint(errors)
+
+    # Automatically apply any pending DB migrations on startup.
+    # Wrapping in try/except so a migration error doesn't crash the entire app
+    # on every request — the error will be logged and visible in Render logs.
+    with app.app_context():
+        try:
+            upgrade()
+            logger.info("[BLOGIFY] flask db upgrade completed successfully.")
+        except Exception as e:  # noqa: BLE001
+            logger.error("[BLOGIFY] flask db upgrade FAILED: %s", e)
 
     return app
