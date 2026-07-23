@@ -119,9 +119,13 @@ def reset_request():
             send_reset_email(user)
         except Exception:
             current_app.logger.exception('Failed to send password reset email to %s', form.email.data)
-            flash('We could not send the reset email right now. Please try again later.', 'danger')
+            flash(
+                'Could not send the reset email. '
+                'Please check the server email configuration (EMAIL_USER / EMAIL_PASS).',
+                'danger'
+            )
             return redirect(url_for('users.reset_request'))
-        flash('An email has been sent with instruction to reset your password', 'info')
+        flash('An email has been sent with instructions to reset your password.', 'info')
         return redirect(url_for('users.login'))
     return render_template('reset_request.html', title='Reset Password',  form=form)
 

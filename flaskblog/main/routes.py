@@ -30,3 +30,17 @@ def home():
 @main.route("/about")
 def about():
     return render_template('about.html', title='About')
+
+
+@main.route("/search")
+def search():
+    query = request.args.get('q', '').strip()
+    page  = request.args.get('page', 1, type=int)
+    if query:
+        results = Post.query.filter(
+            (Post.title.ilike(f'%{query}%')) | (Post.content.ilike(f'%{query}%'))
+        ).order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
+    else:
+        results = None
+    form = DeleteForm()
+    return render_template('search.html', title='Search', query=query, results=results, form=form)

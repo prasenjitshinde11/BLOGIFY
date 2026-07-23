@@ -41,7 +41,7 @@
 
       <div class="post-footer">
         <div class="post-stats">
-          <span class="post-stat"><i class="ti ti-heart"></i> 0</span>
+          <span class="post-stat"><i class="ti ti-heart"></i> {{ post.like_count }}</span>
           <span class="post-stat"><i class="ti ti-message-circle"></i> {{ post.comments|length }}</span>
         </div>
         <a class="read-more" href="{{ url_for('posts.post', post_id=post.id) }}">

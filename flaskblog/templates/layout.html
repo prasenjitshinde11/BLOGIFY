@@ -24,10 +24,11 @@
             Blogify
         </a>
 
-        <div class="nav-search">
+        <form class="nav-search" action="{{ url_for('main.search') }}" method="GET" role="search">
             <i class="ti ti-search"></i>
-            <input type="text" placeholder="Search posts..." id="navSearch">
-        </div>
+            <input type="text" name="q" placeholder="Search posts..." id="navSearch"
+                   value="{{ request.args.get('q', '') }}" autocomplete="off">
+        </form>
 
         <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
             <i class="ti ti-menu-2"></i>

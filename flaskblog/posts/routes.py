@@ -1,9 +1,9 @@
 from flask import (render_template, url_for, flash,  
-                   redirect, request, abort, Blueprint, current_app)
+                   redirect, request, abort, Blueprint, current_app, jsonify)
 from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 from flaskblog import db
-from flaskblog.models import Post , Comment
+from flaskblog.models import Post , Comment, Like
 from flaskblog.posts.forms import PostForm, CommentForm
 
 posts = Blueprint('posts', __name__)
@@ -105,3 +105,24 @@ def delete_post(post_id):
 
     flash("Your post has been deleted!", "success")
     return redirect(url_for("main.home"))
+
+
+@posts.route("/post/<int:post_id>/like", methods=['POST'])
+@login_required
+def like_post(post_id):
+    """AJAX endpoint — toggles like on a post and returns updated count."""
+    post = Post.query.get_or_404(post_id)
+    existing = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    if existing:
+        db.session.delete(existing)
+        liked = False
+    else:
+        db.session.add(Like(user_id=current_user.id, post_id=post_id))
+        liked = True
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.exception('Failed to toggle like on post %s', post_id)
+        return jsonify({'error': 'Could not update like. Please try again.'}), 500
+    return jsonify({'liked': liked, 'count': post.like_count})

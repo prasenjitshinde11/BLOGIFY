@@ -51,9 +51,27 @@ class Post(db.Model):
     image_file = db.Column(db.String(20), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete-orphan')
+
+    @property
+    def like_count(self):
+        return len(self.likes)
+
+    def is_liked_by(self, user):
+        return any(like.user_id == user.id for like in self.likes)
 
     def __repr__(self):
-        return f"Post('{self.title}' , '{self.date_posted}')" 
+        return f"Post('{self.title}' , '{self.date_posted}')"
+
+
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    __table_args__ = (db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_like'),)
+
+    def __repr__(self):
+        return f"Like(user={self.user_id}, post={self.post_id})" 
     
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
