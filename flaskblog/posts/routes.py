@@ -1,6 +1,7 @@
 from flask import (render_template, url_for, flash,  
-                   redirect, request, abort, Blueprint)
+                   redirect, request, abort, Blueprint, current_app)
 from flask_login import current_user, login_required
+from sqlalchemy.exc import SQLAlchemyError
 from flaskblog import db
 from flaskblog.models import Post , Comment
 from flaskblog.posts.forms import PostForm, CommentForm
@@ -15,7 +16,13 @@ def new_post():
      if form.validate_on_submit():
          post= Post(title=form.title.data, content=form.content.data, author=current_user)
          db.session.add(post)
-         db.session.commit()
+         try:
+             db.session.commit()
+         except SQLAlchemyError:
+             db.session.rollback()
+             current_app.logger.exception('Failed to create post for user %s', current_user.id)
+             flash('Could not create your post due to a server error. Please try again.', 'danger')
+             return render_template('create_post.html', title='New Post', form=form, legend='New Post')
          flash('Your post has been created! ', 'success')
          return redirect(url_for('main.home'))
      return render_template('create_post.html', title='New Post', form=form, legend='New Post')
@@ -29,7 +36,13 @@ def post(post_id):
     if form.validate_on_submit():
         comment = Comment(body=form.content.data, user_id=current_user.id, post_id=post.id)
         db.session.add(comment)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            current_app.logger.exception('Failed to add comment on post %s', post.id)
+            flash('Could not add your comment due to a server error. Please try again.', 'danger')
+            return redirect(url_for('posts.post', post_id=post.id))
         flash('Your comment has been added!', 'success')
         return redirect(url_for('posts.post', post_id=post.id))
     
@@ -50,7 +63,13 @@ def update_post(post_id):
     if form.validate_on_submit():
         post.title =  form.title.data
         post.content =  form.content.data
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            current_app.logger.exception('Failed to update post %s', post.id)
+            flash('Could not update your post due to a server error. Please try again.', 'danger')
+            return render_template('create_post.html', title='update Post', form=form, legend='Update Post')
         # Fix #22: Fixed flash category typo 'succces' → 'success'
         flash('Your post has been updated','success')
         return redirect(url_for('posts.post', post_id=post.id))
@@ -76,7 +95,13 @@ def delete_post(post_id):
         abort(403)
 
     db.session.delete(post)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.exception('Failed to delete post %s', post.id)
+        flash('Could not delete your post due to a server error. Please try again.', 'danger')
+        return redirect(url_for('posts.post', post_id=post.id))
 
     flash("Your post has been deleted!", "success")
     return redirect(url_for("main.home"))

@@ -1,5 +1,6 @@
 from flask import Blueprint
-from flask import  render_template, url_for, flash, redirect , request 
+from flask import  render_template, url_for, flash, redirect , request , current_app
+from sqlalchemy.exc import SQLAlchemyError
 from flaskblog import  db , bcrypt 
 from flaskblog.users.forms import (RegistrationForm, LoginForm ,UpdateAccountForm, 
                              DeleteForm, RequestResetForm, ResetPasswordForm)
@@ -20,7 +21,13 @@ def register():
         hashed_password =  bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            current_app.logger.exception('Failed to create account for %s', form.email.data)
+            flash('Could not create your account due to a server error. Please try again.', 'danger')
+            return render_template('register.html', title='Register', form=form)
         flash("Your account has been  created Successfuly !" , 'success')
         return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
@@ -60,12 +67,23 @@ def account():
 
     if form.validate_on_submit():
         if form.picture.data:
-            picture_file =  save_picture(form.picture.data)
+            try:
+                picture_file = save_picture(form.picture.data)
+            except OSError:
+                current_app.logger.exception('Failed to save profile picture for user %s', current_user.id)
+                flash('Could not process the uploaded image. Please try a different file.', 'danger')
+                return redirect(url_for('users.account'))
             current_user.image_file = picture_file
         # Fix #11: username update was inside the if block, now outside
         current_user.username = form.username.data
         current_user.email = form.email.data
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            current_app.logger.exception('Failed to update account for user %s', current_user.id)
+            flash('Could not update your account due to a server error. Please try again.', 'danger')
+            return redirect(url_for('users.account'))
         flash('Your account has been updated!','success')
         return redirect(url_for('users.account'))
     
@@ -97,7 +115,12 @@ def reset_request():
     form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        send_reset_email(user)
+        try:
+            send_reset_email(user)
+        except Exception:
+            current_app.logger.exception('Failed to send password reset email to %s', form.email.data)
+            flash('We could not send the reset email right now. Please try again later.', 'danger')
+            return redirect(url_for('users.reset_request'))
         flash('An email has been sent with instruction to reset your password', 'info')
         return redirect(url_for('users.login'))
     return render_template('reset_request.html', title='Reset Password',  form=form)
@@ -117,7 +140,13 @@ def reset_token(token):
         # Fix #5: Update existing user password instead of creating new user
         hashed_password =  bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user.password = hashed_password
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            current_app.logger.exception('Failed to reset password for user %s', user.id)
+            flash('Could not update your password due to a server error. Please try again.', 'danger')
+            return render_template('reset_token.html', title='Reset Password', form=form)
         flash("Your password has been updated! You are now able to log in" , 'success')
         return redirect(url_for('users.login'))
     # Fix #6: Render the correct template
