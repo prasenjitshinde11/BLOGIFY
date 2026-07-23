@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-grid">
+
+  <!-- SEARCH RESULTS FEED -->
+  <div class="feed">
+    <div class="content-section" style="margin-bottom:24px;">
+      <h2 style="margin:0 0 8px;font-size:1.4rem;">
+        <i class="ti ti-search" style="color:var(--cyan);margin-right:8px;"></i>
+        {% if query %}Search results for <em style="color:var(--cyan);">"{{ query }}"</em>
+        {% else %}Search Posts{% endif %}
+      </h2>
+      {% if results %}
+        <p style="color:var(--text-secondary);margin:0;font-size:0.9rem;">
+          {{ results.total }} result{{ 's' if results.total != 1 }} found
+        </p>
+      {% endif %}
+    </div>
+
+    {% if results and results.items %}
+      {% for post in results.items %}
+      <article class="post-card" id="post-{{ post.id }}">
+        <div class="post-header">
+          <img class="post-avatar"
+               src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}"
+               alt="{{ post.author.username }}">
+          <div class="post-meta">
+            <a class="post-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">
+              {{ post.author.username }}
+            </a>
+            <div class="post-date">{{ post.date_posted.strftime('%b %d, %Y') }}</div>
+          </div>
+          {% if post.author == current_user %}
+          <div class="post-actions">
+            <a class="btn-sm btn-edit" href="{{ url_for('posts.update_post', post_id=post.id) }}">
+              <i class="ti ti-pencil"></i> Edit
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if post.image_file %}
+        <img class="post-image"
+             src="{{ url_for('static', filename='post_images/' + post.image_file) }}"
+             alt="{{ post.title }}">
+        {% endif %}
+
+        <h2 class="post-title">
+          <a href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a>
+        </h2>
+        <p class="post-content">{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}</p>
+
+        <div class="post-footer">
+          <div class="post-stats">
+            <span class="post-stat"><i class="ti ti-heart"></i> {{ post.like_count }}</span>
+            <span class="post-stat"><i class="ti ti-message-circle"></i> {{ post.comments|length }}</span>
+          </div>
+          <a class="read-more" href="{{ url_for('posts.post', post_id=post.id) }}">
+            Read More <i class="ti ti-arrow-right"></i>
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+
+      <!-- Pagination -->
+      <div class="pagination">
+        {% for page_num in results.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if page_num %}
+            <a class="page-btn {% if results.page == page_num %}active{% endif %}"
+               href="{{ url_for('main.search', q=query, page=page_num) }}">{{ page_num }}</a>
+          {% else %}
+            <span class="page-ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {% elif query %}
+      <div class="content-section" style="text-align:center;padding:60px 32px;">
+        <i class="ti ti-mood-empty" style="font-size:48px;color:var(--text-muted);display:block;margin-bottom:16px;"></i>
+        <h3 style="margin:0 0 8px;">No results found</h3>
+        <p style="color:var(--text-secondary);margin:0;">
+          No posts matched <strong>"{{ query }}"</strong>. Try a different keyword.
+        </p>
+      </div>
+    {% else %}
+      <div class="content-section" style="text-align:center;padding:60px 32px;">
+        <i class="ti ti-search" style="font-size:48px;color:var(--text-muted);display:block;margin-bottom:16px;"></i>
+        <h3 style="margin:0 0 8px;">Search Blogify</h3>
+        <p style="color:var(--text-secondary);margin:0;">Type a keyword in the search bar above to find posts.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-box">
+      <h3 class="sidebar-title"><i class="ti ti-info-circle"></i> Search Tips</h3>
+      <p class="sidebar-desc">Search by post title or content. Results are sorted by newest first.</p>
+    </div>
+  </aside>
+
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+# https://docs.devin.ai/onboard-devin/environment-yaml
+# Commands run from the repo root.
+initialize: |
+  python3 -m venv venv
+maintenance: |
+  ./venv/bin/pip install -r requirements-dev.txt
+knowledge:
+  - name: test
+    contents: |
+      ./venv/bin/coverage run --source=flaskblog -m pytest && ./venv/bin/coverage report -m
+  - name: run
+    contents: |
+      ./venv/bin/python fast.py
