@@ -42,14 +42,15 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(errors)
 
-    # Automatically apply any pending DB migrations on startup.
-    # Wrapping in try/except so a migration error doesn't crash the entire app
-    # on every request — the error will be logged and visible in Render logs.
+    # Auto-run DB migrations on startup so the like table (and any future
+    # migrations) are applied automatically on Render without needing the
+    # paid Shell feature. Safe to run repeatedly — it is idempotent.
     with app.app_context():
         try:
             upgrade()
-            logger.info("[BLOGIFY] flask db upgrade completed successfully.")
+            logger.info("[BLOGIFY] flask db upgrade completed.")
         except Exception as e:  # noqa: BLE001
             logger.error("[BLOGIFY] flask db upgrade FAILED: %s", e)
 
     return app
+
