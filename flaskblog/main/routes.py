@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from flask_login import current_user
 from flaskblog.models import Post, User, Comment
 from flaskblog.users.forms import DeleteForm
@@ -30,3 +30,17 @@ def home():
 @main.route("/about")
 def about():
     return render_template('about.html', title='About')
+
+
+@main.route("/search")
+def search():
+    query = request.args.get('q', '').strip()
+    page  = get_page()
+    if query:
+        results = Post.query.filter(
+            (Post.title.ilike(f'%{query}%')) | (Post.content.ilike(f'%{query}%'))
+        ).order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
+    else:
+        results = None
+    form = DeleteForm()
+    return render_template('search.html', title='Search', query=query, results=results, form=form)

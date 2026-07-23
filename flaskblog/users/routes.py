@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask import  render_template, url_for, flash, redirect , request 
+from flask import render_template, url_for, flash, redirect, request, current_app
 from flaskblog import  db , bcrypt 
 from flaskblog.users.forms import (RegistrationForm, LoginForm ,UpdateAccountForm, 
                              DeleteForm, RequestResetForm, ResetPasswordForm)
@@ -95,8 +95,16 @@ def reset_request():
     form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        send_reset_email(user)
-        flash('An email has been sent with instruction to reset your password', 'info')
+        try:
+            send_reset_email(user)
+            flash('An email has been sent with instructions to reset your password.', 'info')
+        except Exception as e:
+            current_app.logger.error(f'Failed to send reset email: {e}')
+            flash(
+                'Could not send the reset email. '
+                'Please check the server email configuration (EMAIL_USER / EMAIL_PASS).',
+                'danger'
+            )
         return redirect(url_for('users.login'))
     return render_template('reset_request.html', title='Reset Password',  form=form)
 

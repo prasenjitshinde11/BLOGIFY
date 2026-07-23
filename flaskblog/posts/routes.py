@@ -1,8 +1,8 @@
-from flask import (render_template, url_for, flash,  
-                   redirect, request, Blueprint)
+from flask import (render_template, url_for, flash,
+                   redirect, request, Blueprint, jsonify)
 from flask_login import current_user, login_required
 from flaskblog import db
-from flaskblog.models import Post , Comment
+from flaskblog.models import Post, Comment, Like
 from flaskblog.posts.forms import PostForm, CommentForm
 from flaskblog.utils import abort_if_not_author
 
@@ -79,3 +79,21 @@ def delete_post(post_id):
 
     flash("Your post has been deleted!", "success")
     return redirect(url_for("main.home"))
+
+
+@posts.route("/post/<int:post_id>/like", methods=['POST'])
+@login_required
+def like_post(post_id):
+    """AJAX endpoint — toggles like on a post and returns updated count."""
+    post = Post.query.get_or_404(post_id)
+    existing = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+        liked = False
+    else:
+        new_like = Like(user_id=current_user.id, post_id=post_id)
+        db.session.add(new_like)
+        db.session.commit()
+        liked = True
+    return jsonify({'liked': liked, 'count': post.like_count})

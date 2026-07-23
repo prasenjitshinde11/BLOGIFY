@@ -87,9 +87,10 @@ The UI features a **premium glassmorphic design** with:
 
 ### 💬 Social & Engagement
 - Comment system on every post
-- Per-post comment counts
+- ❤️ **Like / Unlike posts** with real-time AJAX (no page reload)
+- Per-post like counts & comment counts on every card
 - Author profiles with avatar images
-- Community-driven content discovery
+- 🔍 **Full-text search** — search posts by title or content
 
 </td>
 <td width="50%">
@@ -106,9 +107,10 @@ The UI features a **premium glassmorphic design** with:
 <td width="50%">
 
 ### 📧 Email Integration
-- Password reset emails via Gmail SMTP
-- Timed token-based verification links
-- Configurable mail server settings
+- Password reset emails via SMTP (Gmail or Mailtrap)
+- Timed token-based verification links (30 min expiry)
+- Mailtrap sandbox for safe local dev testing
+- Graceful error handling — friendly flash instead of 500 crash
 
 </td>
 <td width="50%">
@@ -134,7 +136,7 @@ The UI features a **premium glassmorphic design** with:
 | **Backend** | Python 3.10+ · Flask 3.0 · Gunicorn |
 | **Database** | Flask-SQLAlchemy · SQLite (dev) · PostgreSQL (prod) · Flask-Migrate |
 | **Auth** | Flask-Login · Flask-Bcrypt · Flask-WTF · itsdangerous |
-| **Mail** | Flask-Mail · Gmail SMTP |
+| **Mail** | Flask-Mail · Gmail SMTP · Mailtrap (dev sandbox) |
 | **Frontend** | Jinja2 · HTML5 · CSS3 (Glassmorphism) · Tabler Icons · Inter Font |
 | **Imaging** | Pillow (avatar resizing) |
 | **Deployment** | Render · Gunicorn · python-dotenv |
@@ -233,8 +235,18 @@ Create a `.env` file in the project root:
 
 ```env
 SECRET_KEY=your_super_secret_key_here
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_gmail_app_password
+
+# For local development — use Mailtrap (free at mailtrap.io)
+MAIL_SERVER=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+EMAIL_USER=your_mailtrap_username
+EMAIL_PASS=your_mailtrap_password
+
+# For production — use Gmail App Password
+# MAIL_SERVER=smtp.gmail.com
+# MAIL_PORT=587
+# EMAIL_USER=your_email@gmail.com
+# EMAIL_PASS=your_gmail_app_password
 ```
 
 > 💡 **Tip:** Generate a strong secret key with `python -c "import secrets; print(secrets.token_hex(32))"`
@@ -260,9 +272,14 @@ Open **http://127.0.0.1:5000** in your browser 🎉
 | Variable | Description | Required |
 |:---|:---|:---:|
 | `SECRET_KEY` | Flask session encryption key | ✅ |
-| `EMAIL_USER` | Gmail address for sending password reset emails | ✅ |
-| `EMAIL_PASS` | Gmail app password ([how to generate](https://support.google.com/accounts/answer/185833)) | ✅ |
+| `EMAIL_USER` | SMTP username (Mailtrap for dev, Gmail for prod) | ✅ |
+| `EMAIL_PASS` | SMTP password (Mailtrap password or Gmail App Password) | ✅ |
+| `MAIL_SERVER` | SMTP host — `sandbox.smtp.mailtrap.io` (dev) or `smtp.gmail.com` (prod) | ❌ |
+| `MAIL_PORT` | SMTP port — `2525` (Mailtrap) or `587` (Gmail) | ❌ |
+| `MAIL_SUPPRESS_SEND` | Set to `True` to skip sending emails in tests | ❌ |
 | `DATABASE_URL` | PostgreSQL connection string (production only) | ❌ |
+
+> 💡 **Local Dev Email:** Sign up free at [mailtrap.io](https://mailtrap.io) → Sandboxes → My Sandbox → SMTP Settings. Emails are captured in Mailtrap — nothing is sent to real inboxes.
 
 <br>
 
@@ -279,10 +296,10 @@ BLOGIFY/
 ├── flaskblog/                       # Main application package
 │   ├── __init__.py                  # App factory & extension init
 │   ├── config.py                    # Configuration (env vars, DB, mail)
-│   ├── models.py                    # SQLAlchemy models (User, Post, Comment)
+│   ├── models.py                    # SQLAlchemy models (User, Post, Comment, Like)
 │   │
 │   ├── main/                        # Main blueprint
-│   │   └── routes.py                #   → Welcome page, Home feed, About
+│   │   └── routes.py                #   → Welcome page, Home feed, About, Search
 │   │
 │   ├── users/                       # Users blueprint
 │   │   ├── routes.py                #   → Login, Register, Account, Reset
@@ -290,7 +307,7 @@ BLOGIFY/
 │   │   └── utils.py                 #   → Avatar upload & email helpers
 │   │
 │   ├── posts/                       # Posts blueprint
-│   │   ├── routes.py                #   → Create, Read, Update, Delete posts
+│   │   ├── routes.py                #   → Create, Read, Update, Delete posts, Like toggle
 │   │   └── forms.py                 #   → PostForm, CommentForm
 │   │
 │   ├── errors/                      # Errors blueprint
@@ -307,6 +324,7 @@ BLOGIFY/
 │   │   ├── account.html             #   → Profile settings
 │   │   ├── create_post.html         #   → New / edit post form
 │   │   ├── user_posts.html          #   → Posts by a specific user
+│   │   ├── search.html              #   → Search results page
 │   │   ├── about.html               #   → About Blogify page
 │   │   ├── reset_request.html       #   → Request password reset
 │   │   ├── reset_token.html         #   → Set new password
@@ -331,7 +349,9 @@ BLOGIFY/
 erDiagram
     USER ||--o{ POST : writes
     USER ||--o{ COMMENT : writes
+    USER ||--o{ LIKE : gives
     POST ||--o{ COMMENT : has
+    POST ||--o{ LIKE : receives
 
     USER {
         int id PK
@@ -357,6 +377,12 @@ erDiagram
         int user_id FK
         int post_id FK
     }
+
+    LIKE {
+        int id PK
+        int user_id FK
+        int post_id FK
+    }
 ```
 
 <br>
@@ -369,6 +395,7 @@ erDiagram
 |:---:|:---|:---|
 | `GET` | `/` | Home feed (paginated) |
 | `GET` | `/about` | About Blogify page |
+| `GET` | `/search?q=keyword` | Search posts by title or content |
 
 ### 👤 Users Blueprint
 
@@ -387,9 +414,10 @@ erDiagram
 | Method | Route | Description |
 |:---:|:---|:---|
 | `GET/POST` | `/post/new` | Create a new post |
-| `GET` | `/post/<id>` | View a single post |
+| `GET/POST` | `/post/<id>` | View a single post + comments |
 | `GET/POST` | `/post/<id>/update` | Edit an existing post |
 | `POST` | `/post/<id>/delete` | Delete a post |
+| `POST` | `/post/<id>/like` | Toggle like on a post (AJAX, returns JSON) |
 
 <br>
 
