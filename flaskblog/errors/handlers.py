@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, current_app
+from flaskblog import db
 
 errors = Blueprint('errors', __name__)
 
@@ -15,5 +16,8 @@ def error_403(error):
 
 @errors.app_errorhandler(500)
 def error_500(error):
+    # Roll back any half-finished transaction so a failed request does not
+    # leave the session in a broken state for subsequent requests.
+    db.session.rollback()
+    current_app.logger.exception('Unhandled server error', exc_info=error)
     return render_template('errors/500.html'), 500
-
