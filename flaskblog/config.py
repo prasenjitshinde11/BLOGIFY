@@ -2,7 +2,13 @@ import os
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-fallback-change-in-production')
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    if not SECRET_KEY:
+        raise RuntimeError(
+            "SECRET_KEY environment variable is not set. Generate one with "
+            "`python -c \"import secrets; print(secrets.token_hex(32))\"` and set it "
+            "before starting the app."
+        )
     # Support DATABASE_URL from Render/Heroku; fix postgres:// prefix for SQLAlchemy
     _db_url = os.environ.get('DATABASE_URL', 'sqlite:///site.db')
     if _db_url.startswith('postgres://'):

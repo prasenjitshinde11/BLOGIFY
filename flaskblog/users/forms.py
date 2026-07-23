@@ -20,7 +20,7 @@ class RegistrationForm(FlaskForm):
 
     password = PasswordField(
         'Password',
-        validators=[DataRequired()]
+        validators=[DataRequired(), Length(min=8, max=128)]
     )
 
     confirm_password = PasswordField(
@@ -101,7 +101,7 @@ class RequestResetForm(FlaskForm):
 class ResetPasswordForm(FlaskForm):
        password = PasswordField(
         'Password',
-        validators=[DataRequired()] )
+        validators=[DataRequired(), Length(min=8, max=128)] )
     
        confirm_password = PasswordField(
         'Confirm Password',
